@@ -1,18 +1,27 @@
-import { Node } from 'cc';
-import { _decorator, Component, dragonBones, EventTouch } from 'cc';
+import {
+	EventKeyboard,
+	Input,
+	KeyCode,
+	Node,
+	RigidBody2D,
+	input,
+	v2,
+	v3,
+} from 'cc';
+import { _decorator, Component, dragonBones } from 'cc';
+import { DIRECTION, SPEED_HORIZONTAL, SPEED_VERTICAL } from '../Constant';
 const { ccclass, property } = _decorator;
 
 @ccclass('Level')
 export class Level extends Component {
-	@property(dragonBones.Armature)
-	drgCube: dragonBones.Armature;
+	@property(dragonBones.ArmatureDisplay)
+	drgCube: dragonBones.ArmatureDisplay;
+
+	private direction: DIRECTION = DIRECTION.NONE;
 
 	onEnable() {
-		// super.onEnable();
-		this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
-		this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
-		this.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
-		this.node.on(Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
+		input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+		input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
 	}
 
 	start() {}
@@ -20,25 +29,46 @@ export class Level extends Component {
 	update(deltaTime: number) {}
 
 	onDisable() {
-		// super.onDisable();
-		this.node.off(Node.EventType.TOUCH_START, this.onTouchStart, this);
-		this.node.off(Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
-		this.node.off(Node.EventType.TOUCH_END, this.onTouchEnd, this);
-		this.node.off(Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
+		input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+		input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
 	}
 
-	onTouchStart(e: EventTouch) {
-		const startPos = e.getStartLocation();
-		const curPos = e.getLocation();
-		console.log('startPos', startPos);
-		console.log('curPos', curPos);
+	onKeyDown(e: EventKeyboard) {
+		const rigidBody2D = this.drgCube.node.getComponent(RigidBody2D);
+		const { x, y } = rigidBody2D.linearVelocity;
+		switch (e.keyCode) {
+			case KeyCode.KEY_A:
+				this.direction = DIRECTION.LEFT;
+
+				rigidBody2D.linearVelocity = v2(-SPEED_HORIZONTAL, y);
+				break;
+			case KeyCode.KEY_D:
+				this.direction = DIRECTION.RIGHT;
+				rigidBody2D.linearVelocity = v2(SPEED_HORIZONTAL, y);
+				break;
+
+			default:
+				break;
+		}
 	}
-	onTouchMove(e: EventTouch) {
-		const startPos = e.getStartLocation();
-		const curPos = e.getLocation();
-		console.log('startPos1', startPos);
-		console.log('curPos1', curPos);
+	onKeyUp(e: EventKeyboard) {
+		const rigidBody2D = this.drgCube.node.getComponent(RigidBody2D);
+		const { x, y } = rigidBody2D.linearVelocity;
+		switch (e.keyCode) {
+			case KeyCode.KEY_A:
+				this.direction = DIRECTION.NONE;
+				rigidBody2D.linearVelocity = v2(0, y);
+				break;
+			case KeyCode.KEY_D:
+				this.direction = DIRECTION.NONE;
+				rigidBody2D.linearVelocity = v2(0, y);
+				break;
+			case KeyCode.SPACE:
+				this.direction = DIRECTION.UP;
+				rigidBody2D.linearVelocity = v2(x, SPEED_VERTICAL);
+				break;
+			default:
+				break;
+		}
 	}
-	onTouchEnd(e: EventTouch) {}
-	onTouchCancel(e: EventTouch) {}
 }

@@ -1,4 +1,4 @@
-import { sys } from 'cc';
+import { Node, sys } from 'cc';
 
 // 浏览器保存数据至本地
 export function saveForWebBrowser(Json: JSON, FileName: string) {
@@ -56,4 +56,13 @@ export function formatGold(gold: number | string) {
 	return goldInNumber < 10000
 		? Math.round(goldInNumber).toString()
 		: Math.floor(goldInNumber / 10000) + 'W';
+}
+
+// 获取节点及其所有子节点
+export function getAllChildrenOfTargetNode(tarNode: Node) {
+	let all = [tarNode];
+	for (const child of tarNode.children) {
+		all = [...all, ...getAllChildrenOfTargetNode(child)];
+	}
+	return all;
 }

@@ -1,4 +1,11 @@
-import { _decorator, Component, instantiate, Node } from 'cc';
+import {
+	_decorator,
+	Component,
+	EPhysics2DDrawFlags,
+	instantiate,
+	Node,
+	PhysicsSystem2D,
+} from 'cc';
 import { Observer } from './core/observer/Observer';
 import ResMgr from './core/mgrs/ResMgr';
 const { ccclass, property } = _decorator;
@@ -16,6 +23,13 @@ export class MainScene extends Observer {
 	public onMsg(msg: any, data: any): void {}
 
 	start() {
+		PhysicsSystem2D.instance.debugDrawFlags =
+			EPhysics2DDrawFlags.Aabb |
+			EPhysics2DDrawFlags.Pair |
+			EPhysics2DDrawFlags.CenterOfMass |
+			EPhysics2DDrawFlags.Joint |
+			EPhysics2DDrawFlags.Shape;
+
 		ResMgr.instance
 			.loadPrefab('prefabs/levels/Level1')
 			.then((prefab) => {
