@@ -101,9 +101,9 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 0,
-      "g": 0,
-      "b": 0,
+      "r": 45,
+      "g": 45,
+      "b": 45,
       "a": 255
     },
     "_spriteFrame": {
@@ -138,6 +138,7 @@
       "__id__": 0
     },
     "fileId": "4bTs2QvM5NuYJu/0fWRj54",
+    "instance": null,
     "targetOverrides": null
   }
 ]

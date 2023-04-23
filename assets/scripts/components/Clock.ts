@@ -23,6 +23,8 @@ export class Clock extends Component {
 	@property(Sprite)
 	spHourPin: Sprite;
 
+	private status = COLOR_STATUS.DAY;
+
 	private _curTime: number = 0;
 	public get curTime(): number {
 		return this._curTime;
@@ -31,11 +33,15 @@ export class Clock extends Component {
 		if (this._curTime === v) return;
 		this._curTime = v;
 		this.spHourPin.node.angle = -this.curTime * HOUR_SPIN_ANGLE_PER_SECOND;
+
 		if (this._curTime === MIDDLE_TIME) {
-			ObserverMgr.instance.dispatchMsg(
-				Msg.LocalMsg.ExchangeColor,
-				COLOR_STATUS.NIGHT
-			);
+			if (this.status === COLOR_STATUS.DAY) {
+				this.status = COLOR_STATUS.NIGHT;
+			} else if (this.status === COLOR_STATUS.NIGHT) {
+				this.status = COLOR_STATUS.DAY;
+			}
+			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.ExchangeColor, this.status);
+			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.ShowMoonOrSun, this.status);
 		}
 	}
 
