@@ -1,4 +1,4 @@
-import { Prefab, resources, Sprite, SpriteFrame } from 'cc';
+import { Asset, AudioClip, Prefab, resources, Sprite, SpriteFrame } from 'cc';
 
 export default class ResMgr {
 	private static _instance: ResMgr;
@@ -58,6 +58,25 @@ export default class ResMgr {
 	public async loadPrefab(path: string): Promise<Prefab> {
 		return new Promise((resolve, reject) => {
 			resources.load(path, Prefab, (err, data: Prefab) => {
+				if (err) reject(err);
+				else resolve(data);
+			});
+		});
+	}
+
+	// 预加载音频资源
+	public async preloadAudioDirs(dirPath: string) {
+		return new Promise((resolve, reject) => {
+			resources.loadDir(dirPath, (err, data: Asset[]) => {
+				if (err) reject(err);
+				else resolve(data);
+			});
+		});
+	}
+	// 加载音频资源
+	public async loadAudioClips(path: string): Promise<AudioClip> {
+		return new Promise((resolve, reject) => {
+			resources.load(path, AudioClip, (err, data: AudioClip) => {
 				if (err) reject(err);
 				else resolve(data);
 			});

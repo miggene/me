@@ -1,11 +1,10 @@
-import { _decorator, Component, dragonBones, macro, Node } from 'cc';
-import ObserverMgr from '../core/observer/ObserverMgr';
+import { _decorator, Component, macro, Node } from 'cc';
 import Msg from '../core/msg/Msg';
-import { Observer } from '../core/observer/Observer';
+import ObserverMgr from '../core/observer/ObserverMgr';
 const { ccclass, property } = _decorator;
 
-@ccclass('Sun')
-export class Sun extends Observer {
+@ccclass('Moon')
+export class Moon extends Component {
 	private timer = 0;
 	public getMsgList(): string[] {
 		return [Msg.LocalMsg.GameFail, Msg.LocalMsg.GameWin];
@@ -24,16 +23,16 @@ export class Sun extends Observer {
 		this.timer++;
 		switch (this.timer) {
 			case 10:
-				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Sun, 1);
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Moon, 1);
 				break;
 			case 20:
-				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Sun, 2);
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Moon, 2);
 				break;
 			case 30:
-				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Sun, 3);
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Moon, 3);
 				break;
 			case 40:
-				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Sun, 4);
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Moon, 4);
 				break;
 			default:
 				break;

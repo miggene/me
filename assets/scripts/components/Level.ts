@@ -5,23 +5,31 @@ import {
 	IPhysics2DContact,
 	Input,
 	KeyCode,
+	Label,
 	Node,
 	RigidBody2D,
+	UITransform,
 	input,
+	math,
+	tween,
 	v2,
 	v3,
 } from 'cc';
 import { _decorator, Component, dragonBones } from 'cc';
 import {
 	COLOR_STATUS,
+	DAY_HEX,
 	DIRECTION,
 	GAME_STATUS,
+	NIGHT_HEX,
+	PRINCE_VELOCITY_Y,
 	SPEED_HORIZONTAL,
 	SPEED_VERTICAL,
 } from '../Constant';
 import { Observer } from '../core/observer/Observer';
 import Msg from '../core/msg/Msg';
 import ObserverMgr from '../core/observer/ObserverMgr';
+import { ColorExchange } from './ColorExchange';
 
 const { ccclass, property } = _decorator;
 
@@ -59,6 +67,9 @@ export class Level extends Observer {
 			Msg.LocalMsg.ShowMoonOrSun,
 			Msg.LocalMsg.GameFail,
 			Msg.LocalMsg.Sun,
+			Msg.LocalMsg.TimeOut,
+			Msg.LocalMsg.PrinceAngry,
+			Msg.LocalMsg.Moon,
 		];
 	}
 
@@ -94,6 +105,40 @@ export class Level extends Observer {
 			this.drgCube.playAnimation(name, 0);
 			return;
 		}
+		if (msg === Msg.LocalMsg.Moon) {
+			const name =
+				this.colorStatus === COLOR_STATUS.DAY ? `d_sun${data}` : `n_sun${data}`;
+			this.drgCube.playAnimation(name, 0);
+		}
+
+		if (msg === Msg.LocalMsg.TimeOut) {
+			this.fail();
+			return;
+		}
+
+		if (msg === Msg.LocalMsg.PrinceAngry) {
+			let name = '';
+			if (this.colorStatus === COLOR_STATUS.DAY && data === 1) {
+				name = 'd_angry_1';
+			}
+
+			if (this.colorStatus === COLOR_STATUS.NIGHT && data === 1) {
+				name = 'n_angry_1';
+			}
+
+			if (this.colorStatus === COLOR_STATUS.DAY && data === 0) {
+				name = 'd_standby';
+			}
+
+			if (this.colorStatus === COLOR_STATUS.NIGHT && data === 0) {
+				name = 'n_standby';
+			}
+			this.drgPrince.node.getComponent(RigidBody2D).linearVelocity = v2(
+				0,
+				data === 1 ? PRINCE_VELOCITY_Y.ANGRY : PRINCE_VELOCITY_Y.NORMAL
+			);
+			this.drgPrince.playAnimation(name, 0);
+		}
 	}
 
 	start() {}
@@ -104,6 +149,22 @@ export class Level extends Observer {
 			this.gameStatus === GAME_STATUS.WIN
 		)
 			return;
+
+		if (
+			this.drgCube.node.getPosition().y <
+			-this.node.getComponent(UITransform).height / 2
+		) {
+			this.fail();
+			return;
+		}
+
+		if (
+			this.drgPrince.node.getPosition().y >
+			this.node.getComponent(UITransform).height / 2
+		) {
+			this.fail();
+			return;
+		}
 		if (this.drgCube.node.getComponent(RigidBody2D).linearVelocity.y === 0) {
 			this.jumpTimes = 2;
 		}
@@ -145,7 +206,10 @@ export class Level extends Observer {
 					this.direction = DIRECTION.UP;
 					rigidBody2D.linearVelocity = v2(x, SPEED_VERTICAL);
 					this.jumpTimes--;
-					console.log('this.jumpTimes3', this.jumpTimes);
+					ObserverMgr.instance.dispatchMsg(
+						Msg.LocalMsg.PlaySound,
+						'sounds/jump'
+					);
 				}
 
 			default:
@@ -201,29 +265,37 @@ export class Level extends Observer {
 	) {
 		const otherName = otherCollider.node.name;
 		const selfName = selfCollider.node.name;
-		if (selfName === 'Cube' && otherName === 'Stin') {
+		if (selfName === 'Cube' && (otherName === 'Stin' || otherName === 'Star')) {
 			console.log('end');
-			this.gameStatus = GAME_STATUS.FAIL;
-			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.GameFail, null);
-			this.offCubePhysicsListener();
-			this.offInputListener();
-			this.showFail();
+			this.fail();
 			return;
 		}
 		if (selfName === 'Cube' && otherName === 'Prince') {
 			console.log('win');
-			this.gameStatus = GAME_STATUS.WIN;
-			this.offCubePhysicsListener();
-			this.offInputListener();
-			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.GameWin, null);
-			this.showWin();
+			this.win();
 			return;
 		}
 		if (selfName === 'Cube' && otherName === 'Flower') {
 			const body = this.drgCube.node.getComponent(RigidBody2D);
 			body.applyLinearImpulseToCenter(v2(0, 100), true);
+			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 			return;
 		}
+	}
+
+	fail() {
+		this.gameStatus = GAME_STATUS.FAIL;
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.GameFail, null);
+		this.offCubePhysicsListener();
+		this.offInputListener();
+		this.showFail();
+	}
+	win() {
+		this.gameStatus = GAME_STATUS.WIN;
+		this.offCubePhysicsListener();
+		this.offInputListener();
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.GameWin, null);
+		this.showWin();
 	}
 
 	onCubeEndContact(
@@ -234,41 +306,50 @@ export class Level extends Observer {
 
 	offCubePhysicsListener() {
 		const collider = this.drgCube.node.getComponent(Collider2D);
-		collider.off(Contact2DType.BEGIN_CONTACT, this.onCubeBeginContact, this);
-		collider.off(Contact2DType.END_CONTACT, this.onCubeBeginContact, this);
+		collider?.off(Contact2DType.BEGIN_CONTACT, this.onCubeBeginContact, this);
+		collider?.off(Contact2DType.END_CONTACT, this.onCubeBeginContact, this);
 	}
 
 	showWin() {
-		this.drgCube.node.getComponent(RigidBody2D).destroy();
-		this.drgCube.node.getComponent(Collider2D).destroy();
-		this.drgPrince.node.getComponent(RigidBody2D).destroy();
-		this.drgPrince.node.getComponent(Collider2D).destroy();
+		this.drgCube.node.getComponent(RigidBody2D)?.destroy();
+		this.drgCube.node.getComponent(Collider2D)?.destroy();
+		this.drgPrince.node.getComponent(RigidBody2D)?.destroy();
+		this.drgPrince.node.getComponent(Collider2D)?.destroy();
 		this.playLove();
 		this.playCubeWin();
 		this.playPrinceWin();
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/win');
 	}
 
 	showFail() {
-		this.drgCube.node.getComponent(RigidBody2D).destroy();
-		this.drgCube.node.getComponent(Collider2D).destroy();
-		this.drgPrince.node.getComponent(RigidBody2D).destroy();
-		this.drgPrince.node.getComponent(Collider2D).destroy();
+		this.drgCube.node.getComponent(RigidBody2D)?.destroy();
+		this.drgCube.node.getComponent(Collider2D)?.destroy();
+		this.drgPrince.node.getComponent(RigidBody2D)?.destroy();
+		this.drgPrince.node.getComponent(Collider2D)?.destroy();
 
 		if (this.colorStatus === COLOR_STATUS.DAY)
 			this.drgCube.playAnimation('d_die', 1);
 		if (this.colorStatus === COLOR_STATUS.NIGHT)
 			this.drgCube.playAnimation('n_die', 1);
+
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/fail');
 	}
 
 	playLove() {
 		this.drgLove.node.active = true;
+		const label = this.drgLove.node
+			.getChildByName('btnNext')
+			.getComponent(Label);
+
 		this.onLoveListener();
 		if (this.colorStatus === COLOR_STATUS.DAY) {
 			this.drgLove.playAnimation('d_appear', 1);
+			label.color = new math.Color(NIGHT_HEX);
 			return;
 		}
 		if (this.colorStatus === COLOR_STATUS.NIGHT) {
 			this.drgLove.playAnimation('n_appear', 1);
+			label.color = new math.Color(DAY_HEX);
 		}
 	}
 
@@ -354,7 +435,7 @@ export class Level extends Observer {
 	onPrinceListener() {
 		this.drgPrince.addEventListener(
 			dragonBones.EventObject.COMPLETE,
-			this.onCubeCompleted,
+			this.onPrinceCompleted,
 			this
 		);
 	}
@@ -362,7 +443,7 @@ export class Level extends Observer {
 	offPrinceListener() {
 		this.drgPrince.removeEventListener(
 			dragonBones.EventObject.COMPLETE,
-			this.onCubeCompleted,
+			this.onPrinceCompleted,
 			this
 		);
 	}

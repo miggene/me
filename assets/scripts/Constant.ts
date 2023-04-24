@@ -22,3 +22,7 @@ export const enum GAME_STATUS {
 	FAIL,
 	WIN,
 }
+export const PRINCE_VELOCITY_Y = {
+	NORMAL: 0.4,
+	ANGRY: 0.8,
+};

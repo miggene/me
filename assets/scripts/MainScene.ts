@@ -1,27 +1,38 @@
 import {
 	_decorator,
+	AudioSource,
 	Component,
 	EPhysics2DDrawFlags,
 	instantiate,
+	math,
 	Node,
 	PhysicsSystem2D,
 	randomRangeInt,
+	Sprite,
 	tween,
 	UIOpacity,
 } from 'cc';
 import { Observer } from './core/observer/Observer';
 import ResMgr from './core/mgrs/ResMgr';
 import Msg from './core/msg/Msg';
-import { COLOR_STATUS } from './Constant';
+import { COLOR_STATUS, DAY_HEX } from './Constant';
+import AudioMgr from './core/mgrs/AudioMgr';
+import ObserverMgr from './core/observer/ObserverMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('MainScene')
 export class MainScene extends Observer {
+	@property(Sprite)
+	spBg: Sprite;
+
 	@property(Node)
 	uiLayer: Node;
 
 	@property(Node)
 	levelLayer: Node;
+
+	@property(AudioSource)
+	audioSource: AudioSource;
 
 	private curLevel = 1; // 当前关卡
 
@@ -30,10 +41,22 @@ export class MainScene extends Observer {
 			Msg.LocalMsg.ShowMoonOrSun,
 			Msg.LocalMsg.NextLevel,
 			Msg.LocalMsg.Retry,
+			Msg.LocalMsg.PlaySound,
 		];
 	}
 
 	public onMsg(msg: any, data: any): void {
+		if (msg === Msg.LocalMsg.Retry) {
+			this.retryLevel();
+		}
+		if (msg === Msg.LocalMsg.PlaySound) {
+			ResMgr.instance
+				.loadAudioClips(data)
+				.then((clip) => {
+					AudioMgr.instance.playSound(clip);
+				})
+				.catch((err) => console.error(err));
+		}
 		if (msg === Msg.LocalMsg.ShowMoonOrSun) {
 			const bShow = randomRangeInt(0, 2) > 0;
 			if (data === COLOR_STATUS.DAY) {
@@ -51,12 +74,8 @@ export class MainScene extends Observer {
 			return;
 		}
 		if (msg === Msg.LocalMsg.NextLevel) {
-			this.fadeOutAction(this.nextLevel);
+			this.nextLevel();
 			return;
-		}
-		if (msg === Msg.LocalMsg.Retry) {
-			// this.loadLevel(this.curLevel);
-			this.fadeOutAction(this.retryLevel);
 		}
 	}
 
@@ -68,32 +87,48 @@ export class MainScene extends Observer {
 		// 	EPhysics2DDrawFlags.Joint |
 		// 	EPhysics2DDrawFlags.Shape;
 
-		this.loadLevel(this.curLevel);
+		Promise.all([
+			ResMgr.instance.preloadAudioDirs('sounds'),
+			AudioMgr.instance.init(this.audioSource),
+		]).then(() => {
+			this.loadLevel(this.curLevel);
+		});
 	}
 
 	update(deltaTime: number) {}
 
 	async loadLevel(level: number) {
-		randomRangeInt(0, 2) > 0 && this.addSunOrMoon('Sun');
-		ResMgr.instance
-			.loadPrefab(`prefabs/levels/Level${level}`)
-			.then((prefab) => {
-				const levelNode = instantiate(prefab);
-				this.levelLayer.addChild(levelNode);
-			})
-			.catch((err) => console.error(err));
+		try {
+			const prefab = await ResMgr.instance.loadPrefab(
+				`prefabs/levels/Level${level}`
+			);
+			const levelNode = instantiate(prefab);
+			this.levelLayer.addChild(levelNode);
+			randomRangeInt(0, 2) > 0 && (await this.addSunOrMoon('Sun'));
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
 	nextLevel() {
 		this.curLevel++;
-		this.fadeInAction(() => {
-			this.loadLevel(this.curLevel);
-		});
+		if (this.curLevel > 3) this.curLevel = 1;
+		this.levelLayer.destroyAllChildren();
+		this.loadLevel(this.curLevel);
+		// ObserverMgr.instance.dispatchMsg(
+		// 	Msg.LocalMsg.ExchangeColor,
+		// 	COLOR_STATUS.DAY
+		// );
+		this.spBg.color = new math.Color(DAY_HEX);
 	}
 	retryLevel() {
-		this.fadeInAction(() => {
-			this.loadLevel(this.curLevel);
-		});
+		this.levelLayer.destroyAllChildren();
+		this.loadLevel(this.curLevel);
+		// ObserverMgr.instance.dispatchMsg(
+		// 	Msg.LocalMsg.ExchangeColor,
+		// 	COLOR_STATUS.DAY
+		// );
+		this.spBg.color = new math.Color(DAY_HEX);
 	}
 
 	async addSunOrMoon(type: 'Sun' | 'Moon') {
@@ -104,28 +139,5 @@ export class MainScene extends Observer {
 				this.levelLayer.addChild(prfNode);
 			})
 			.catch((err) => console.error(err));
-	}
-
-	fadeOutAction(cb: Function) {
-		console.log(
-			'this.levelLayer.getComponent(UIOpacity)',
-			this.levelLayer.getComponent(UIOpacity)
-		);
-		tween(this.levelLayer.getComponent(UIOpacity))
-			.to(1, { opacity: 0 })
-			.call(() => {
-				this.levelLayer.destroyAllChildren();
-				cb && cb();
-			})
-			.start();
-	}
-	fadeInAction(cb?: Function) {
-		tween(this.levelLayer.getComponent(UIOpacity))
-			.to(1, { opacity: 255 })
-			.call(() => {
-				this.levelLayer.destroyAllChildren();
-				if (cb) cb();
-			})
-			.start();
 	}
 }

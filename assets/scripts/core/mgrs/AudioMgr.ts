@@ -30,4 +30,9 @@ export default class AudioMgr {
 		this.audioSource.stop();
 		this.audioSource.clip = null;
 	}
+
+	public playSound(clip: AudioClip) {
+		this.audioSource.clip = clip;
+		this.audioSource.playOneShot(clip);
+	}
 }

@@ -33,6 +33,10 @@
       {
         "index": 6,
         "name": "FLOWER"
+      },
+      {
+        "index": 7,
+        "name": "STAR"
       }
     ],
     "collisionMatrix": {

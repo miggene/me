@@ -7,6 +7,8 @@ import {
 	KeyCode,
 	macro,
 	Sprite,
+	tween,
+	v3,
 } from 'cc';
 import {
 	COLOR_STATUS,
@@ -53,10 +55,17 @@ export class Clock extends Observer {
 	public onMsg(msg: any, data: any): void {
 		if (msg === Msg.LocalMsg.GameWin) {
 			this.stopClock();
+
 			return;
 		}
 		if (msg === Msg.LocalMsg.GameFail) {
 			this.stopClock();
+			tween(this.node)
+				.to(0.5, { position: v3(0, 200) })
+				.call(() => {
+					this.node.getChildByName('btnRetry').active = true;
+				})
+				.start();
 			return;
 		}
 	}
@@ -82,6 +91,7 @@ export class Clock extends Observer {
 		if (this.curTime >= TOTAL_TIME) {
 			this.unschedule(this.refreshClock);
 			console.log('done');
+			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.TimeOut, null);
 		}
 	}
 
@@ -102,6 +112,7 @@ export class Clock extends Observer {
 				this.stopClock();
 				this.curTime -= 1;
 				this.curTime = Math.max(0, this.curTime);
+
 				if (this.curTime <= 0) {
 					console.log('done 0');
 				}
@@ -110,10 +121,13 @@ export class Clock extends Observer {
 				this.stopClock();
 				this.curTime += 1;
 				this.curTime = Math.min(720, this.curTime);
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PrinceAngry, 1);
 				if (this.curTime >= 720) {
 					this.unschedule(this.runClock);
 					console.log('done');
+					ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.TimeOut, null);
 				}
+
 				break;
 			default:
 				break;
@@ -136,6 +150,7 @@ export class Clock extends Observer {
 				this.curTime = Math.min(TOTAL_TIME, this.curTime);
 				if (this.curTime >= TOTAL_TIME) {
 					this.unschedule(this.runClock);
+					ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.TimeOut, null);
 					console.log('done');
 				}
 				break;
@@ -150,9 +165,20 @@ export class Clock extends Observer {
 				break;
 			case KeyCode.ARROW_DOWN:
 				this.runClock();
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PrinceAngry, 0);
 				break;
 			default:
 				break;
 		}
+	}
+
+	retry() {
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/retry');
+		tween(this.node)
+			.repeat(120, tween(this.node).by(0.01, { angle: 6 }))
+			.call(() => {
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Retry, null);
+			})
+			.start();
 	}
 }

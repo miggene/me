@@ -11,5 +11,6 @@ export class Love extends Component {
 
 	nextLevel() {
 		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.NextLevel, null);
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 	}
 }
