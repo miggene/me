@@ -17,12 +17,27 @@
       {
         "index": 2,
         "name": "CUBE"
+      },
+      {
+        "index": 3,
+        "name": "STIN"
+      },
+      {
+        "index": 4,
+        "name": "PRINCE"
+      },
+      {
+        "index": 5,
+        "name": "ICE"
       }
     ],
     "collisionMatrix": {
       "0": 1,
-      "1": 4,
-      "2": 2
+      "1": 20,
+      "2": 58,
+      "3": 20,
+      "4": 14,
+      "5": 4
     }
   }
 }

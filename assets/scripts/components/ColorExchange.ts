@@ -34,10 +34,6 @@ export class ColorExchange extends Observer {
 	public onMsg(msg: any, data: any): void {
 		if (msg === Msg.LocalMsg.ExchangeColor) {
 			this.updateColor();
-			// if (this.status !== data) {
-			// 	this.status = COLOR_STATUS.NIGHT;
-			// 	this.updateColor();
-			// }
 		}
 	}
 

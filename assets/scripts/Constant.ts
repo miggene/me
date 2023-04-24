@@ -6,8 +6,8 @@ export const enum DIRECTION {
 	LEFT,
 	RIGHT,
 }
-export const SPEED_HORIZONTAL = 10;
-export const SPEED_VERTICAL = 5;
+export const SPEED_HORIZONTAL = 2;
+export const SPEED_VERTICAL = 12;
 export const HOUR_SPIN_ANGLE_PER_SECOND = 6;
 export const TOTAL_TIME = 120;
 export const MIDDLE_TIME = 60;
@@ -17,3 +17,8 @@ export const enum COLOR_STATUS {
 }
 export const DAY_HEX = '#FFFFFF';
 export const NIGHT_HEX = '#2D2D2D';
+export const enum GAME_STATUS {
+	START,
+	FAIL,
+	WIN,
+}

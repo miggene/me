@@ -16,10 +16,11 @@ import {
 } from '../Constant';
 import ObserverMgr from '../core/observer/ObserverMgr';
 import Msg from '../core/msg/Msg';
+import { Observer } from '../core/observer/Observer';
 const { ccclass, property } = _decorator;
 
 @ccclass('Clock')
-export class Clock extends Component {
+export class Clock extends Observer {
 	@property(Sprite)
 	spHourPin: Sprite;
 
@@ -45,7 +46,23 @@ export class Clock extends Component {
 		}
 	}
 
-	protected onEnable(): void {
+	public getMsgList(): string[] {
+		return [Msg.LocalMsg.GameWin, Msg.LocalMsg.GameFail];
+	}
+
+	public onMsg(msg: any, data: any): void {
+		if (msg === Msg.LocalMsg.GameWin) {
+			this.stopClock();
+			return;
+		}
+		if (msg === Msg.LocalMsg.GameFail) {
+			this.stopClock();
+			return;
+		}
+	}
+
+	onEnable(): void {
+		super.onEnable();
 		input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
 		input.on(Input.EventType.KEY_PRESSING, this.onKeyPressing, this);
 		input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
@@ -72,7 +89,8 @@ export class Clock extends Component {
 		this.unschedule(this.refreshClock);
 	}
 
-	protected onDisable(): void {
+	onDisable(): void {
+		super.onDisable();
 		input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
 		input.off(Input.EventType.KEY_PRESSING, this.onKeyPressing, this);
 		input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
