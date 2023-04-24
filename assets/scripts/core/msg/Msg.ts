@@ -11,6 +11,10 @@ export default {
 		PlaySound: 'LocalMsg_PlaySound',
 		TimeOut: 'LocaMsg_TimeOut',
 		PrinceAngry: 'LocalMsg_PrinceAngry',
+		DownClock: 'LocalMsg_DownClock',
+		UpClock: 'LocalMsg_UpClock',
+		FinishGuild: 'Local_FinishGuild',
+		PrinceStoped: 'Local_PrinceStoped',
 	},
 	SDK: {
 		AdCompleted: 'LocalMsg_SDK_AdCompleted',

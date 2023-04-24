@@ -35,6 +35,7 @@ export class MainScene extends Observer {
 	audioSource: AudioSource;
 
 	private curLevel = 1; // 当前关卡
+	private hasGuilded = false;
 
 	public getMsgList(): string[] {
 		return [
@@ -42,6 +43,7 @@ export class MainScene extends Observer {
 			Msg.LocalMsg.NextLevel,
 			Msg.LocalMsg.Retry,
 			Msg.LocalMsg.PlaySound,
+			Msg.LocalMsg.FinishGuild,
 		];
 	}
 
@@ -77,6 +79,13 @@ export class MainScene extends Observer {
 			this.nextLevel();
 			return;
 		}
+		if (msg === Msg.LocalMsg.FinishGuild) {
+			this.hasGuilded = true;
+			this.curLevel = 1;
+			this.levelLayer.destroyAllChildren();
+			this.spBg.color = new math.Color(DAY_HEX);
+			this.loadLevel(this.curLevel);
+		}
 	}
 
 	start() {
@@ -90,12 +99,23 @@ export class MainScene extends Observer {
 		Promise.all([
 			ResMgr.instance.preloadAudioDirs('sounds'),
 			AudioMgr.instance.init(this.audioSource),
-		]).then(() => {
-			this.loadLevel(this.curLevel);
+		]).then(async () => {
+			await this.loadLevel(this.curLevel);
+			await this.loadGuild();
 		});
 	}
 
 	update(deltaTime: number) {}
+
+	async loadGuild() {
+		try {
+			const prefab = await ResMgr.instance.loadPrefab('prefabs/GuildLayer');
+			const gulidLayer = instantiate(prefab);
+			this.node.addChild(gulidLayer);
+		} catch (error) {
+			console.error(error);
+		}
+	}
 
 	async loadLevel(level: number) {
 		try {

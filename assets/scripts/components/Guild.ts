@@ -1,4 +1,4 @@
-import { _decorator, Component, dragonBones, input, Input, Node } from 'cc';
+import { _decorator, Component, dragonBones, input, Input, Node, v3 } from 'cc';
 import ObserverMgr from '../core/observer/ObserverMgr';
 import Msg from '../core/msg/Msg';
 const { ccclass, property } = _decorator;
@@ -22,6 +22,7 @@ export class Guild extends Component {
 
 	start() {
 		this.playGuild();
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PrinceStoped, null);
 	}
 
 	playGuild() {
@@ -32,7 +33,17 @@ export class Guild extends Component {
 
 	onTouchStart() {
 		this.step++;
-		if (this.step > 3) this.node.destroy();
+		if (this.step === 2) {
+			const { x, y, z } = this.node.getPosition();
+			this.node.setPosition(v3(0, 200));
+		}
+		if (this.step !== 2) {
+			this.node.setPosition(v3(0, 0));
+		}
+		if (this.step > 3) {
+			this.node.destroy();
+			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.FinishGuild, null);
+		}
 		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 		this.playGuild();
 	}

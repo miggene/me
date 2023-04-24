@@ -70,6 +70,7 @@ export class Level extends Observer {
 			Msg.LocalMsg.TimeOut,
 			Msg.LocalMsg.PrinceAngry,
 			Msg.LocalMsg.Moon,
+			Msg.LocalMsg.PrinceStoped,
 		];
 	}
 
@@ -139,6 +140,10 @@ export class Level extends Observer {
 			);
 			this.drgPrince.playAnimation(name, 0);
 		}
+		if (msg === Msg.LocalMsg.PrinceStoped) {
+			const body = this.drgPrince.node.getComponent(RigidBody2D);
+			body.linearVelocity = v2(0, PRINCE_VELOCITY_Y.STOP);
+		}
 	}
 
 	start() {}
@@ -201,7 +206,7 @@ export class Level extends Observer {
 				this.direction = DIRECTION.RIGHT;
 				rigidBody2D.linearVelocity = v2(SPEED_HORIZONTAL, y);
 				break;
-			case KeyCode.KEY_W:
+			case KeyCode.SPACE:
 				if (this.jumpTimes > 0) {
 					this.direction = DIRECTION.UP;
 					rigidBody2D.linearVelocity = v2(x, SPEED_VERTICAL);

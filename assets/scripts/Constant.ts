@@ -25,4 +25,5 @@ export const enum GAME_STATUS {
 export const PRINCE_VELOCITY_Y = {
 	NORMAL: 0.4,
 	ANGRY: 0.8,
+	STOP: 0,
 };

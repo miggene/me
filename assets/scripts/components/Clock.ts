@@ -9,6 +9,7 @@ import {
 	Sprite,
 	tween,
 	v3,
+	Vec3,
 } from 'cc';
 import {
 	COLOR_STATUS,
@@ -25,6 +26,8 @@ const { ccclass, property } = _decorator;
 export class Clock extends Observer {
 	@property(Sprite)
 	spHourPin: Sprite;
+
+	private basePos: Vec3;
 
 	private status = COLOR_STATUS.DAY;
 
@@ -49,7 +52,12 @@ export class Clock extends Observer {
 	}
 
 	public getMsgList(): string[] {
-		return [Msg.LocalMsg.GameWin, Msg.LocalMsg.GameFail];
+		return [
+			Msg.LocalMsg.GameWin,
+			Msg.LocalMsg.GameFail,
+			Msg.LocalMsg.DownClock,
+			Msg.LocalMsg.UpClock,
+		];
 	}
 
 	public onMsg(msg: any, data: any): void {
@@ -68,6 +76,18 @@ export class Clock extends Observer {
 				.start();
 			return;
 		}
+		if (msg === Msg.LocalMsg.DownClock) {
+			const { x, y, z } = this.node.getPosition();
+			this.node.setPosition(x, y - 200, z);
+			return;
+		}
+		if (msg === Msg.LocalMsg.UpClock) {
+			this.node.setPosition(this.basePos);
+		}
+	}
+
+	protected onLoad(): void {
+		this.basePos = this.node.position.clone();
 	}
 
 	onEnable(): void {
@@ -108,16 +128,16 @@ export class Clock extends Observer {
 
 	onKeyDown(e: EventKeyboard) {
 		switch (e.keyCode) {
-			case KeyCode.ARROW_UP:
-				this.stopClock();
-				this.curTime -= 1;
-				this.curTime = Math.max(0, this.curTime);
+			// case KeyCode.ARROW_UP:
+			// 	this.stopClock();
+			// 	this.curTime -= 1;
+			// 	this.curTime = Math.max(0, this.curTime);
 
-				if (this.curTime <= 0) {
-					console.log('done 0');
-				}
-				break;
-			case KeyCode.ARROW_DOWN:
+			// 	if (this.curTime <= 0) {
+			// 		console.log('done 0');
+			// 	}
+			// 	break;
+			case KeyCode.KEY_W:
 				this.stopClock();
 				this.curTime += 1;
 				this.curTime = Math.min(720, this.curTime);
@@ -135,16 +155,16 @@ export class Clock extends Observer {
 	}
 	onKeyPressing(e: EventKeyboard) {
 		switch (e.keyCode) {
-			case KeyCode.ARROW_UP:
-				this.stopClock();
-				this.curTime -= 1;
-				this.curTime = Math.max(0, this.curTime);
-				if (this.curTime <= 0) {
-					console.log('done 0');
-				}
-				console.log('this.curTime', this.curTime);
-				break;
-			case KeyCode.ARROW_DOWN:
+			// case KeyCode.ARROW_UP:
+			// 	this.stopClock();
+			// 	this.curTime -= 1;
+			// 	this.curTime = Math.max(0, this.curTime);
+			// 	if (this.curTime <= 0) {
+			// 		console.log('done 0');
+			// 	}
+			// 	console.log('this.curTime', this.curTime);
+			// 	break;
+			case KeyCode.KEY_W:
 				this.stopClock();
 				this.curTime += 1;
 				this.curTime = Math.min(TOTAL_TIME, this.curTime);
@@ -160,10 +180,10 @@ export class Clock extends Observer {
 	}
 	onKeyUp(e: EventKeyboard) {
 		switch (e.keyCode) {
-			case KeyCode.ARROW_UP:
-				this.runClock();
-				break;
-			case KeyCode.ARROW_DOWN:
+			// case KeyCode.ARROW_UP:
+			// 	this.runClock();
+			// 	break;
+			case KeyCode.KEY_W:
 				this.runClock();
 				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PrinceAngry, 0);
 				break;
