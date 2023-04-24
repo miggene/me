@@ -2,6 +2,7 @@ import {
 	_decorator,
 	Color,
 	Component,
+	Label,
 	math,
 	Node,
 	Sprite,
@@ -53,6 +54,16 @@ export class ColorExchange extends Observer {
 					sprite.color = nightColor;
 				} else {
 					sprite.color = dayColor;
+				}
+			}
+			const label = child.getComponent(Label);
+			if (label) {
+				const dayColor = new math.Color(DAY_HEX);
+				const nightColor = new math.Color(NIGHT_HEX);
+				if (label.color.equals(dayColor)) {
+					label.color = nightColor;
+				} else {
+					label.color = dayColor;
 				}
 			}
 		}

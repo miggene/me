@@ -22,6 +22,7 @@ import {
 import { Observer } from '../core/observer/Observer';
 import Msg from '../core/msg/Msg';
 import ObserverMgr from '../core/observer/ObserverMgr';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('Level')
@@ -54,7 +55,11 @@ export class Level extends Observer {
 	}
 
 	public getMsgList(): string[] {
-		return [Msg.LocalMsg.ShowMoonOrSun, Msg.LocalMsg.GameFail];
+		return [
+			Msg.LocalMsg.ShowMoonOrSun,
+			Msg.LocalMsg.GameFail,
+			Msg.LocalMsg.Sun,
+		];
 	}
 
 	public onMsg(msg: any, data: any): void {
@@ -76,7 +81,18 @@ export class Level extends Observer {
 		}
 
 		if (msg === Msg.LocalMsg.GameFail) {
-			// this.offCubePhysicsListener();
+			this.offInputListener();
+			this.offCubePhysicsListener();
+			this.offCubeListener();
+			this.offPrinceListener();
+			return;
+		}
+
+		if (msg === Msg.LocalMsg.Sun) {
+			const name =
+				this.colorStatus === COLOR_STATUS.DAY ? `d_sun${data}` : `n_sun${data}`;
+			this.drgCube.playAnimation(name, 0);
+			return;
 		}
 	}
 
@@ -203,6 +219,11 @@ export class Level extends Observer {
 			this.showWin();
 			return;
 		}
+		if (selfName === 'Cube' && otherName === 'Flower') {
+			const body = this.drgCube.node.getComponent(RigidBody2D);
+			body.applyLinearImpulseToCenter(v2(0, 100), true);
+			return;
+		}
 	}
 
 	onCubeEndContact(
@@ -324,9 +345,9 @@ export class Level extends Observer {
 
 	playPrinceWin() {
 		if (this.colorStatus === COLOR_STATUS.DAY) {
-			this.drgPrince.playAnimation('d_love1', 1);
+			this.drgPrince.playAnimation('d_love_1', 1);
 		} else if (this.colorStatus === COLOR_STATUS.NIGHT) {
-			this.drgPrince.playAnimation('n_love1', 1);
+			this.drgPrince.playAnimation('n_love_1', 1);
 		}
 	}
 
@@ -350,15 +371,15 @@ export class Level extends Observer {
 		const { type, animationState } = event;
 		if (
 			type === dragonBones.EventObject.COMPLETE &&
-			animationState.name === 'd_love1'
+			animationState.name === 'd_love_1'
 		) {
-			this.drgPrince.playAnimation('d_love2', 0);
+			this.drgPrince.playAnimation('d_love_2', 0);
 		}
 		if (
 			type === dragonBones.EventObject.COMPLETE &&
-			animationState.name === 'n_love1'
+			animationState.name === 'n_love_1'
 		) {
-			this.drgPrince.playAnimation('n_love2', 0);
+			this.drgPrince.playAnimation('n_love_2', 0);
 		}
 	}
 }
