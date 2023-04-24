@@ -49,7 +49,10 @@ export class Guild extends Component {
 	}
 	onKeyDown() {
 		this.step++;
-		if (this.step > 3) this.node.destroy();
+		if (this.step > 3) {
+			this.node.destroy();
+			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.FinishGuild, null);
+		}
 		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 		this.playGuild();
 	}
