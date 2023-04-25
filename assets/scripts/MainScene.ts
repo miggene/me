@@ -115,7 +115,13 @@ export class MainScene extends Observer {
 		// }
 		if (msg === Msg.LocalMsg.LoadLevel) {
 			if (data === 1) {
-				this.loadGuild();
+				// this.loadGuild();
+				this.loadLevel(data)
+					.then(() => {
+						this.loadGuild();
+					})
+					.catch((err) => console.error(err));
+				return;
 			}
 			this.loadLevel(data);
 		}

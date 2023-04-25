@@ -284,7 +284,7 @@ export class Level extends Observer {
 		}
 		if (selfName === 'Cube' && otherName === 'Flower') {
 			const body = this.drgCube.node.getComponent(RigidBody2D);
-			body.applyLinearImpulseToCenter(v2(0, 200), true);
+			body.applyLinearImpulseToCenter(v2(0, 30), true);
 			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 			return;
 		}

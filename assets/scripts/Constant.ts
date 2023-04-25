@@ -7,7 +7,7 @@ export const enum DIRECTION {
 	RIGHT,
 }
 export const SPEED_HORIZONTAL = 2;
-export const SPEED_VERTICAL = 12;
+export const SPEED_VERTICAL = 8;
 export const HOUR_SPIN_ANGLE_PER_SECOND = 6;
 export const TOTAL_TIME = 120;
 export const MIDDLE_TIME = 60;

@@ -35,7 +35,7 @@ export class Guild extends Component {
 		this.step++;
 		if (this.step === 2) {
 			const { x, y, z } = this.node.getPosition();
-			this.node.setPosition(v3(0, 200));
+			this.node.setPosition(v3(0, 150));
 		}
 		if (this.step !== 2) {
 			this.node.setPosition(v3(0, 0));
