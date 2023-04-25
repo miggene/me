@@ -15,6 +15,9 @@ export default {
 		UpClock: 'LocalMsg_UpClock',
 		FinishGuild: 'Local_FinishGuild',
 		PrinceStoped: 'Local_PrinceStoped',
+		LoadGuild: 'Local_LoadGuild',
+		LoadLevel: 'Local_LoadLevel',
+		NextWord: 'Local_NextWord',
 	},
 	SDK: {
 		AdCompleted: 'LocalMsg_SDK_AdCompleted',

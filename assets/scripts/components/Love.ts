@@ -10,7 +10,7 @@ export class Love extends Component {
 	update(deltaTime: number) {}
 
 	nextLevel() {
-		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.NextLevel, null);
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.NextWord, null);
 		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 	}
 }

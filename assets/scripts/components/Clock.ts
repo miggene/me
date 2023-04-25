@@ -55,8 +55,8 @@ export class Clock extends Observer {
 		return [
 			Msg.LocalMsg.GameWin,
 			Msg.LocalMsg.GameFail,
-			Msg.LocalMsg.DownClock,
-			Msg.LocalMsg.UpClock,
+			// Msg.LocalMsg.DownClock,
+			// Msg.LocalMsg.UpClock,
 		];
 	}
 
@@ -68,22 +68,22 @@ export class Clock extends Observer {
 		}
 		if (msg === Msg.LocalMsg.GameFail) {
 			this.stopClock();
-			tween(this.node)
-				.to(0.5, { position: v3(0, 200) })
-				.call(() => {
-					this.node.getChildByName('btnRetry').active = true;
-				})
-				.start();
+			// tween(this.node)
+			// 	.to(0.5, { position: v3(0, 200) })
+			// 	.call(() => {
+			// 		this.node.getChildByName('btnRetry').active = true;
+			// 	})
+			// 	.start();
 			return;
 		}
-		if (msg === Msg.LocalMsg.DownClock) {
-			const { x, y, z } = this.node.getPosition();
-			this.node.setPosition(x, y - 200, z);
-			return;
-		}
-		if (msg === Msg.LocalMsg.UpClock) {
-			this.node.setPosition(this.basePos);
-		}
+		// if (msg === Msg.LocalMsg.DownClock) {
+		// 	const { x, y, z } = this.node.getPosition();
+		// 	this.node.setPosition(x, y - 200, z);
+		// 	return;
+		// }
+		// if (msg === Msg.LocalMsg.UpClock) {
+		// 	this.node.setPosition(this.basePos);
+		// }
 	}
 
 	protected onLoad(): void {

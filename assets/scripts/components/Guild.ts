@@ -43,6 +43,7 @@ export class Guild extends Component {
 		if (this.step > 3) {
 			this.node.destroy();
 			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.FinishGuild, null);
+			return;
 		}
 		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 		this.playGuild();
@@ -52,6 +53,7 @@ export class Guild extends Component {
 		if (this.step > 3) {
 			this.node.destroy();
 			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.FinishGuild, null);
+			return;
 		}
 		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 		this.playGuild();

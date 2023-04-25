@@ -1,4 +1,5 @@
 import {
+	Button,
 	Collider2D,
 	Contact2DType,
 	EventKeyboard,
@@ -8,6 +9,7 @@ import {
 	Label,
 	Node,
 	RigidBody2D,
+	Sprite,
 	UITransform,
 	input,
 	math,
@@ -29,7 +31,6 @@ import {
 import { Observer } from '../core/observer/Observer';
 import Msg from '../core/msg/Msg';
 import ObserverMgr from '../core/observer/ObserverMgr';
-import { ColorExchange } from './ColorExchange';
 
 const { ccclass, property } = _decorator;
 
@@ -134,15 +135,16 @@ export class Level extends Observer {
 			if (this.colorStatus === COLOR_STATUS.NIGHT && data === 0) {
 				name = 'n_standby';
 			}
-			this.drgPrince.node.getComponent(RigidBody2D).linearVelocity = v2(
-				0,
-				data === 1 ? PRINCE_VELOCITY_Y.ANGRY : PRINCE_VELOCITY_Y.NORMAL
-			);
+			this.drgPrince.node.getComponent(RigidBody2D) &&
+				(this.drgPrince.node.getComponent(RigidBody2D).linearVelocity = v2(
+					0,
+					data === 1 ? PRINCE_VELOCITY_Y.ANGRY : PRINCE_VELOCITY_Y.NORMAL
+				));
 			this.drgPrince.playAnimation(name, 0);
 		}
 		if (msg === Msg.LocalMsg.PrinceStoped) {
 			const body = this.drgPrince.node.getComponent(RigidBody2D);
-			body.linearVelocity = v2(0, PRINCE_VELOCITY_Y.STOP);
+			body && (body.linearVelocity = v2(0, PRINCE_VELOCITY_Y.STOP));
 		}
 	}
 
@@ -260,7 +262,7 @@ export class Level extends Observer {
 	onCubePhysicsListener() {
 		const collider = this.drgCube.node.getComponent(Collider2D);
 		collider.on(Contact2DType.BEGIN_CONTACT, this.onCubeBeginContact, this);
-		collider.on(Contact2DType.END_CONTACT, this.onCubeBeginContact, this);
+		collider.on(Contact2DType.END_CONTACT, this.onCubeEndContact, this);
 	}
 
 	onCubeBeginContact(
@@ -282,7 +284,7 @@ export class Level extends Observer {
 		}
 		if (selfName === 'Cube' && otherName === 'Flower') {
 			const body = this.drgCube.node.getComponent(RigidBody2D);
-			body.applyLinearImpulseToCenter(v2(0, 100), true);
+			body.applyLinearImpulseToCenter(v2(0, 200), true);
 			ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/jump');
 			return;
 		}
@@ -342,19 +344,19 @@ export class Level extends Observer {
 
 	playLove() {
 		this.drgLove.node.active = true;
-		const label = this.drgLove.node
+		const sprite = this.drgLove.node
 			.getChildByName('btnNext')
-			.getComponent(Label);
+			.getComponent(Sprite);
 
 		this.onLoveListener();
 		if (this.colorStatus === COLOR_STATUS.DAY) {
 			this.drgLove.playAnimation('d_appear', 1);
-			label.color = new math.Color(NIGHT_HEX);
+			sprite.color = new math.Color(NIGHT_HEX);
 			return;
 		}
 		if (this.colorStatus === COLOR_STATUS.NIGHT) {
 			this.drgLove.playAnimation('n_appear', 1);
-			label.color = new math.Color(DAY_HEX);
+			sprite.color = new math.Color(DAY_HEX);
 		}
 	}
 

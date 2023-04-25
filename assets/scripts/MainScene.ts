@@ -2,6 +2,7 @@ import {
 	_decorator,
 	AudioSource,
 	Component,
+	director,
 	EPhysics2DDrawFlags,
 	instantiate,
 	math,
@@ -18,6 +19,7 @@ import Msg from './core/msg/Msg';
 import { COLOR_STATUS, DAY_HEX } from './Constant';
 import AudioMgr from './core/mgrs/AudioMgr';
 import ObserverMgr from './core/observer/ObserverMgr';
+import { Word } from './components/Word';
 const { ccclass, property } = _decorator;
 
 @ccclass('MainScene')
@@ -30,6 +32,12 @@ export class MainScene extends Observer {
 
 	@property(Node)
 	levelLayer: Node;
+
+	@property(Node)
+	failLayer: Node;
+
+	@property(Node)
+	ndClock: Node;
 
 	@property(AudioSource)
 	audioSource: AudioSource;
@@ -44,12 +52,16 @@ export class MainScene extends Observer {
 			Msg.LocalMsg.Retry,
 			Msg.LocalMsg.PlaySound,
 			Msg.LocalMsg.FinishGuild,
+			Msg.LocalMsg.GameFail,
+			// Msg.LocalMsg.LoadGuild,
+			Msg.LocalMsg.LoadLevel,
+			Msg.LocalMsg.NextWord,
 		];
 	}
 
 	public onMsg(msg: any, data: any): void {
 		if (msg === Msg.LocalMsg.Retry) {
-			this.retryLevel();
+			this.retryWord();
 		}
 		if (msg === Msg.LocalMsg.PlaySound) {
 			ResMgr.instance
@@ -79,12 +91,33 @@ export class MainScene extends Observer {
 			this.nextLevel();
 			return;
 		}
+		if (msg === Msg.LocalMsg.NextWord) {
+			this.nextWord();
+		}
 		if (msg === Msg.LocalMsg.FinishGuild) {
 			this.hasGuilded = true;
 			this.curLevel = 1;
 			this.levelLayer.destroyAllChildren();
 			this.spBg.color = new math.Color(DAY_HEX);
 			this.loadLevel(this.curLevel);
+			return;
+		}
+		if (msg === Msg.LocalMsg.GameFail) {
+			this.scheduleOnce(() => {
+				this.levelLayer.destroyAllChildren();
+				this.failLayer.active = true;
+			}, 0.5);
+			return;
+		}
+		// if (msg === Msg.LocalMsg.LoadGuild) {
+		// 	this.curLevel === 1 && this.loadGuild();
+		// 	return;
+		// }
+		if (msg === Msg.LocalMsg.LoadLevel) {
+			if (data === 1) {
+				this.loadGuild();
+			}
+			this.loadLevel(data);
 		}
 	}
 
@@ -100,8 +133,8 @@ export class MainScene extends Observer {
 			ResMgr.instance.preloadAudioDirs('sounds'),
 			AudioMgr.instance.init(this.audioSource),
 		]).then(async () => {
-			await this.loadLevel(this.curLevel);
-			await this.loadGuild();
+			await this.loadWord(this.curLevel);
+			// await this.loadGuild();
 		});
 	}
 
@@ -130,24 +163,40 @@ export class MainScene extends Observer {
 		}
 	}
 
+	async loadWord(level: number) {
+		this.levelLayer.destroyAllChildren();
+		try {
+			const prefab = await ResMgr.instance.loadPrefab(`prefabs/Word`);
+			const wordNode = instantiate(prefab);
+			wordNode.getComponent(Word).init(level);
+			this.node.addChild(wordNode);
+		} catch (error) {
+			console.error(error);
+		}
+	}
+	nextWord() {
+		this.curLevel++;
+		if (this.curLevel > 3) this.curLevel = 1;
+		this.levelLayer.destroyAllChildren();
+		this.loadWord(this.curLevel);
+		this.spBg.color = new math.Color(DAY_HEX);
+	}
+
 	nextLevel() {
 		this.curLevel++;
 		if (this.curLevel > 3) this.curLevel = 1;
 		this.levelLayer.destroyAllChildren();
 		this.loadLevel(this.curLevel);
-		// ObserverMgr.instance.dispatchMsg(
-		// 	Msg.LocalMsg.ExchangeColor,
-		// 	COLOR_STATUS.DAY
-		// );
+		this.spBg.color = new math.Color(DAY_HEX);
+	}
+	retryWord() {
+		this.levelLayer.destroyAllChildren();
+		this.loadWord(this.curLevel);
 		this.spBg.color = new math.Color(DAY_HEX);
 	}
 	retryLevel() {
 		this.levelLayer.destroyAllChildren();
 		this.loadLevel(this.curLevel);
-		// ObserverMgr.instance.dispatchMsg(
-		// 	Msg.LocalMsg.ExchangeColor,
-		// 	COLOR_STATUS.DAY
-		// );
 		this.spBg.color = new math.Color(DAY_HEX);
 	}
 
@@ -159,5 +208,19 @@ export class MainScene extends Observer {
 				this.levelLayer.addChild(prfNode);
 			})
 			.catch((err) => console.error(err));
+	}
+
+	onBtnClickToReturn() {
+		ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.PlaySound, 'sounds/retry');
+		tween(this.ndClock)
+			.repeat(120, tween(this.ndClock).by(0.01, { angle: 6 }))
+			.call(() => {
+				ObserverMgr.instance.dispatchMsg(Msg.LocalMsg.Retry, null);
+				this.failLayer.active = false;
+			})
+			.start();
+	}
+	onBtnClickToEnd() {
+		director.loadScene('StartScene');
 	}
 }
